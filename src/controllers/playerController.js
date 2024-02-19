@@ -2,26 +2,43 @@ import player from "../models/Player.js";
 import { team } from "../models/Team.js";
 
 class PlayerController {
-    static async getPlayers(req, res) {
+    static async getPlayers(req, res, next) {
         try {
             const listPlayer = await player.find({});
             res.status(200).json(listPlayer);
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
-    static async getPlayerId(req, res) {
+    static async getPlayerId(req, res, next) {
         try {
             const id = req.params.id;
-            const getId = await findById(id);
-            res.status(200).json(getId);
+            const getId = await player.findById(id);
+
+            if (getId !== null) {
+                res.status(200).send(getId);
+            } else {
+                res.status(404).send({
+                    message: "ID não encontrado",
+                });
+            }
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
-    static async postPlayer(req, res) {
+    static async getPlayerPosition(req, res, next) {
+        const search = req.query.posi;
+        try {
+            const searchPosition = await player.find({ posi: search });
+            res.status(200).json(searchPosition);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static postPlayer = async (req, res, next) => {
         const playerBody = req.body;
         try {
             const getTeam = await team.findById(playerBody.team);
@@ -29,30 +46,30 @@ class PlayerController {
             const createPlayer = await player.create(newPlayer);
             res.status(201).json({
                 message: "Criado com sucesso!",
-                player: newPlayer,
+                player: createPlayer,
             });
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
-    }
+    };
 
-    static async uptadePlayer(req, res) {
+    static async uptadePlayer(req, res, next) {
         try {
             const id = req.params.id;
             await player.findByIdAndUpdate(id, req.body);
             res.status(200).json();
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
-    static async deletePlayer(req, res) {
+    static async deletePlayer(req, res, next) {
         try {
             const id = req.params.id;
             await player.findByIdAndDelete(id);
             res.status(200).json({ message: "Player Deleted" });
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 }

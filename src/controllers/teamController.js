@@ -1,26 +1,26 @@
 import { team } from "../models/Team.js";
 
 class TeamController {
-    static async getTeam(req, res) {
+    static async getTeam(req, res, next) {
         try {
             const listTeam = await team.find({});
             res.status(200).json(listTeam);
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
-    static async getID(req, res) {
+    static async getID(req, res, next) {
         try {
             const id = req.params.id;
             const teamID = await team.findById(id);
             res.status(200).json(teamID);
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
-    static async postTeam(req, res) {
+    static async postTeam(req, res, next) {
         try {
             const newTeam = await team.create(req.body);
             res.status(201).json({
@@ -28,7 +28,7 @@ class TeamController {
                 player: newTeam,
             });
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 
@@ -42,13 +42,13 @@ class TeamController {
         }
     }
 
-    static async deleteTeam(req, res) {
+    static async deleteTeam(req, res, next) {
         try {
             const id = req.params.id;
             await team.findByIdAndDelete(id);
             res.status(200).json({ message: "Team Deleted" });
         } catch (error) {
-            res.status(500).json(error);
+            next(error);
         }
     }
 }
