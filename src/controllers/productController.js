@@ -1,18 +1,32 @@
+import ErrorRequest from "../error/ErrorRequest.js";
 import NotFound from "../error/notFound.js";
 import { product } from "../models/index.js";
 
 class ProductController {
     static async getProduct(req, res, next) {
         try {
-            const { quantidade = 10, pagina = 1 } = req.query;
-            const list = await product
-                .find()
-                // informa a quantidade de documentos que devem ser pulados em uma pagina
-                .skip((pagina - 1) * quantidade)
-                .limit(quantidade);
-            res.status(200).json(list);
+            let {
+                quantidade = 10,
+                pagina = 1,
+                ordenacao = "_id:-1",
+            } = req.query;
+
+            let [campoOrdenacao, ordem] = ordenacao.split(":");
+            quantidade = parseInt(quantidade);
+            pagina = parseInt(pagina);
+            ordem = parseInt(ordem);
+
+            if (quantidade > 0 && pagina > 0) {
+                const list = await product
+                    .find()
+                    .sort({ [campoOrdenacao]: ordem }) // ordena os documentos
+                    // informa a quantidade de documentos que devem ser pulados em uma pagina
+                    .skip((pagina - 1) * quantidade)
+                    .limit(quantidade);
+                res.status(200).json(list);
+            }
         } catch (error) {
-            next(error);
+            next(new ErrorRequest());
         }
     }
 
